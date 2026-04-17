@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlvinPDF Chatbox</title>
+    <title>AlvinDocuments Chatbot</title>
 
     <link rel="icon" type="image/png" href="img/Alvin_logo.png" />
 
@@ -48,8 +48,8 @@
             <div class="flex items-center space-x-2">
                 <a href="#" onclick="window.location.reload(true); return false;"
                     class="header-link flex items-center space-x-2 cursor-pointer">
-                    <img src="img/Alvin_logo.png" alt="AlvinPDF Logo" class="h-15 w-16" />
-                    <h1 class="text-xl font-medium text-gray-800">AlvinPDF Chatbot - Dương Hữu Đan</h1>
+                    <img src="img/Alvin_logo.png" alt="AlvinDocuments Logo" class="h-15 w-16" />
+                    <h1 class="text-xl font-medium text-gray-800">AlvinDocuments Chatbot - Dương Hữu Đan</h1>
                 </a>
             </div>
 
@@ -64,7 +64,7 @@
                 <h2 class="text-6xl font-light text-blue-500 mb-4 mt-32">Chào bạn!👋</h2>
                 <p class="text-gray-500 text-xl font-light">Tôi là Alvin, một Trợ lý RAG chuyên dụng.</p>
                 <p class="text-gray-500 text-xl font-light">Tôi có thể giúp bạn trò chuyện và trích xuất thông tin trực
-                    tiếp từ các tệp PDF mà bạn tải lên.</p>
+                    tiếp từ các tệp mà bạn tải lên.</p>
             </div>
 
             <div id="messages-area" class="space-y-6">
@@ -76,7 +76,7 @@
         <footer class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-2xl border-t border-gray-100">
             <div class="w-full max-w-3xl mx-auto">
                 <p id="footer-message" class="text-center text-gray-500 mb-2">
-                    Để bắt đầu, hãy tải lên một tệp PDF.
+                    Để bắt đầu, hãy tải lên một tệp.
                 </p>
 
                 <form id="chat-form" class="flex items-center bg-gray-100 rounded-3xl p-1.5 shadow-md">
@@ -90,7 +90,7 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <input id="pdf-upload" type="file" accept=".pdf" class="hidden" />
+                        <input id="pdf-upload" type="file" accept=".pdf,.docx,.doc,.xlsx,.xls,.txt" class="hidden" />
                     </label>
 
                     <input type="text" id="chat-input" placeholder="Vui lòng tải file PDF lên để bắt đầu"

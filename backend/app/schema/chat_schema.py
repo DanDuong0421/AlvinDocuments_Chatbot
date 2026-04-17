@@ -1,12 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import List
 
 class Source(BaseModel):
-    name: str # Tên file PDF
+    file_name: str
+    page: str = "N/A"
 
 class QueryRequest(BaseModel):
     question: str
-    pdf_collection_id: str  # BẮT BUỘC: ID của file PDF muốn hỏi
+    pdf_collection_id: str
     top_k: int = 5
 
 class QueryResponse(BaseModel):

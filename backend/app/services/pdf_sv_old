@@ -17,24 +17,25 @@ def extract_chunks_from_pdf(file_path: str, text_splitter, file_name: str):
     # Bước 1: Gộp text kèm đánh dấu trang ẩn
     for page_num, page in enumerate(reader.pages):
         page_text = page.extract_text() or ""
+        # Chèn dấu mốc trang để sau này AI vẫn biết thông tin nằm ở đâu
         full_text_with_marks += f"\n[PAGE_{page_num + 1}]\n{page_text}"
 
-    # Bước 2: Chia nhỏ toàn bộ văn bản
+    # Bước 2: Chia nhỏ toàn bộ văn bản (giúp giữ liên kết giữa các trang)
     chunks = text_splitter.split_text(full_text_with_marks)
-    
-    # --- LOG CHO FILE PDF ---
-    print(f"Đã chia file PDF thành {len(chunks)} chunks.")
     
     chunks_with_metadata = []
     current_page = 1
     
     for chunk in chunks:
+        # Tìm xem mảnh này thuộc trang nào dựa vào dấu mốc gần nhất
         if "[PAGE_" in chunk:
             try:
+                # Cập nhật số trang nếu tìm thấy dấu mốc trong chunk
                 current_page = int(chunk.split("[PAGE_")[1].split("]")[0])
             except:
                 pass
         
+        # Làm sạch chunk (xóa dấu mốc trang để AI đọc không bị rối)
         clean_content = chunk.split("]\n")[-1] if "]\n" in chunk else chunk
         
         chunks_with_metadata.append({
@@ -44,16 +45,12 @@ def extract_chunks_from_pdf(file_path: str, text_splitter, file_name: str):
         
     return chunks_with_metadata
 
-# --- CÁC HÀM TRÍCH XUẤT WORD ---
+# --- CÁC HÀM CÒN LẠI GIỮ NGUYÊN ---
 
 def extract_chunks_from_docx(file_path: str, text_splitter, file_name: str):
     doc = DocxDocument(file_path)
     full_text = "\n".join([para.text for para in doc.paragraphs])
     chunks = text_splitter.split_text(full_text)
-    
-    # --- LOG CHO FILE WORD ---
-    print(f"Đã chia file DOCX thành {len(chunks)} chunks.")
-    
     return [{"content": c, "metadata": {"source": file_name, "page": "N/A"}} for c in chunks]
 
 def index_document_file(file: UploadFile, temp_file_path: str) -> str:
@@ -63,8 +60,6 @@ def index_document_file(file: UploadFile, temp_file_path: str) -> str:
     qdrant_client: QdrantClient = models_cache["qdrant_client"]
     text_splitter = models_cache["text_splitter"]
 
-    data_to_index = []
-
     try:
         if file_extension == ".pdf":
             data_to_index = extract_chunks_from_pdf(temp_file_path, text_splitter, file.filename)
@@ -73,16 +68,10 @@ def index_document_file(file: UploadFile, temp_file_path: str) -> str:
         elif file_extension == ".txt":
             with open(temp_file_path, "r", encoding="utf-8") as f:
                 txt = f.read()
-            chunks = text_splitter.split_text(txt)
-            # --- LOG CHO FILE TXT ---
-            print(f"Đã chia file TXT thành {len(chunks)} chunks.")
-            data_to_index = [{"content": c, "metadata": {"source": file.filename, "page": "N/A"}} for c in chunks]
+            data_to_index = [{"content": c, "metadata": {"source": file.filename, "page": "N/A"}} for c in text_splitter.split_text(txt)]
         elif file_extension in [".xlsx", ".xls"]:
             df = pd.read_excel(temp_file_path)
-            content = df.to_string()
-            data_to_index = [{"content": content, "metadata": {"source": file.filename, "page": "Excel"}}]
-            # --- LOG CHO FILE EXCEL ---
-            print(f"Đã trích xuất dữ liệu từ file Excel thành công.")
+            data_to_index = [{"content": df.to_string(), "metadata": {"source": file.filename, "page": "Excel"}}]
         else:
             raise HTTPException(status_code=400, detail=f"Định dạng {file_extension} chưa được hỗ trợ.")
         
@@ -97,16 +86,8 @@ def index_document_file(file: UploadFile, temp_file_path: str) -> str:
         vectors_config=models.VectorParams(size=1024, distance=models.Distance.COSINE),
     )
 
-    # --- XỬ LÝ BATCH VÀ LOG TIẾN TRÌNH ---
     points = []
-    batch_size = 64 
-    
     for i, item in enumerate(data_to_index):
-        # In log mỗi khi bắt đầu một lô (batch) mới
-        if i % batch_size == 0:
-            batch_num = (i // batch_size) + 1
-            print(f"Đang vector hóa batch {batch_num}...")
-            
         vector = embedding_model.encode("passage: " + item["content"]).tolist()
         points.append(models.PointStruct(
             id=i,
@@ -120,8 +101,5 @@ def index_document_file(file: UploadFile, temp_file_path: str) -> str:
     
     qdrant_client.upsert(collection_name=collection_name, points=points)
     models_cache["last_collection"] = collection_name
-    
-    # --- LOG KẾT QUẢ CUỐI CÙNG ---
-    print(f"Đã index thành công vào collection: {collection_name}")
 
     return collection_name

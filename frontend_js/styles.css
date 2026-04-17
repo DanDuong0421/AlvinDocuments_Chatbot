@@ -1,0 +1,12 @@
+/* Style cho nhãn nguồn trích dẫn */
+.source-tag {
+    display: inline-block;
+    background-color: #f3f4f6;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    margin-top: 4px;
+    margin-right: 4px;
+    border: 1px solid #e5e7eb;
+}
