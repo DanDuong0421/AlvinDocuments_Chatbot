@@ -1,4 +1,4 @@
-# 🤖 AlvinPDF Chatbot System
+# 🤖 AlvinDocuments Chatbot System
 
 **Project Status:** Hoàn thành (Được phát triển cho Niên luận ngành Hệ thống Thông tin)
 
